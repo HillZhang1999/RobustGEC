@@ -2,13 +2,24 @@ import argparse
 from contextlib import ExitStack
 import errant
 
+def convert_to_m2(annotator, orig, cor, cor_id=0):
+    orig = annotator.parse(orig, False)
+    if orig.text.strip() == cor:
+        return noop_edit(cor_id)
+    cor = annotator.parse(cor, False)
+    edits = annotator.annotate(orig, cor, False, "rules")
+    out_m2 = []
+    for edit in edits:
+        # Write the edit to the output m2 file
+        out_m2.append(edit.to_m2(cor_id)+"\n")
+    return "".join(out_m2)
+
 def main():
     # Parse command line args
     args = parse_args()
     print("Loading resources...")
     # Load Errant
-    annotator = errant.load("en")
-
+    annotator = errant.load("en_core_web_sm")
     print("Processing parallel files...")
     # Process an arbitrary number of files line by line simultaneously. Python 3.3+
     # See https://tinyurl.com/y4cj4gth . Also opens the output m2 file.
